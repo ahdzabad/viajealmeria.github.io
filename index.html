@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cabo de Gata · 7–9 junio 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --sand:#f3e9d9;
+    --cream:#fbf5ea;
+    --ink:#2a201a;
+    --ink-soft:#6b5d50;
+    --rust:#b5482e;
+    --ochre:#d98a3d;
+    --sea:#1c6d68;
+    --sea-deep:#0e4a47;
+    --line:#e2d4bf;
+    --shadow:rgba(60,40,24,.16);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Hanken Grotesk',sans-serif;
+    background:var(--sand);
+    color:var(--ink);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 18px 80px}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:54px 0 30px;
+    text-align:center;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;z-index:-1;
+    background:
+      radial-gradient(120% 90% at 80% 0%, rgba(217,138,61,.22), transparent 55%),
+      radial-gradient(100% 80% at 10% 10%, rgba(28,109,104,.18), transparent 50%);
+  }
+  .sun{
+    width:74px;height:74px;border-radius:50%;margin:0 auto 18px;
+    background:radial-gradient(circle at 35% 30%, #f3b54e, var(--rust));
+    box-shadow:0 0 0 10px rgba(217,138,61,.15), 0 14px 34px var(--shadow);
+    animation:rise 1.1s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes rise{from{transform:translateY(28px) scale(.7);opacity:0}to{transform:none;opacity:1}}
+  .kicker{
+    font-size:.78rem;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--rust);font-weight:700;margin-bottom:10px;
+  }
+  .hero h1{
+    font-family:'Fraunces',serif;font-weight:900;
+    font-size:clamp(2.4rem,9vw,4rem);line-height:.98;
+    letter-spacing:-.01em;
+  }
+  .hero h1 em{font-style:italic;color:var(--sea)}
+  .hero .dates{
+    margin-top:14px;font-size:1.02rem;color:var(--ink-soft);font-weight:500;
+  }
+  .crew{
+    display:inline-flex;gap:8px;align-items:center;margin-top:18px;
+    background:var(--cream);border:1px solid var(--line);
+    padding:8px 16px;border-radius:999px;font-size:.86rem;font-weight:600;
+    box-shadow:0 6px 18px var(--shadow);
+  }
+
+  /* ---------- DAY TABS ---------- */
+  .tabs{
+    position:sticky;top:0;z-index:20;
+    display:flex;gap:8px;padding:12px 0;
+    background:linear-gradient(var(--sand) 70%, transparent);
+    margin-top:6px;
+  }
+  .tab{
+    flex:1;border:1px solid var(--line);background:var(--cream);
+    border-radius:14px;padding:11px 6px;cursor:pointer;
+    font-family:'Hanken Grotesk',sans-serif;color:var(--ink-soft);
+    transition:.25s;text-align:center;line-height:1.2;
+  }
+  .tab b{display:block;font-size:1.05rem;color:var(--ink);font-weight:700}
+  .tab span{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
+  .tab.active{
+    background:var(--sea);border-color:var(--sea);
+    box-shadow:0 8px 20px rgba(14,74,71,.3);transform:translateY(-2px);
+  }
+  .tab.active b,.tab.active span{color:#fff}
+
+  /* ---------- DAY PANELS ---------- */
+  .day{display:none}
+  .day.active{display:block;animation:fade .45s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .day-head{
+    display:flex;align-items:baseline;gap:12px;margin:18px 2px 8px;
+  }
+  .day-head h2{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:600}
+  .day-head .route{font-size:.85rem;color:var(--rust);font-weight:700;letter-spacing:.04em}
+
+  /* ---------- TIMELINE ---------- */
+  .timeline{position:relative;padding-left:30px;margin-top:8px}
+  .timeline::before{
+    content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;
+    background:linear-gradient(var(--ochre),var(--sea));
+  }
+  .stop{position:relative;margin-bottom:14px}
+  .dot{
+    position:absolute;left:-30px;top:18px;width:20px;height:20px;border-radius:50%;
+    background:var(--cream);border:3px solid var(--ochre);z-index:2;
+    display:grid;place-items:center;font-size:.6rem;
+  }
+  .card{
+    background:var(--cream);border:1px solid var(--line);border-radius:16px;
+    overflow:hidden;box-shadow:0 4px 16px var(--shadow);
+  }
+  .card-top{
+    display:flex;gap:12px;align-items:flex-start;padding:14px 16px;cursor:pointer;
+  }
+  .time{
+    flex-shrink:0;background:var(--ink);color:var(--sand);
+    font-weight:700;font-size:.82rem;padding:4px 9px;border-radius:8px;
+    min-width:60px;text-align:center;
+  }
+  .time.opt{background:var(--ochre);color:var(--ink)}
+  .card-title{flex:1}
+  .card-title h3{font-size:1.06rem;font-weight:700;line-height:1.25}
+  .card-title .tag{font-size:.76rem;color:var(--ink-soft);font-weight:500}
+  .chev{transition:.3s;color:var(--ink-soft);font-size:1.1rem;flex-shrink:0;margin-top:2px}
+  .stop.open .chev{transform:rotate(180deg)}
+  .card-body{
+    max-height:0;overflow:hidden;transition:max-height .4s ease;
+  }
+  .stop.open .card-body{max-height:600px}
+  .card-body .inner{padding:0 16px 16px;font-size:.94rem;color:var(--ink-soft)}
+  .card-body .inner p{margin-bottom:8px}
+  .card-body .inner strong{color:var(--ink)}
+
+  /* warning callout — always placed BEFORE the step it refers to */
+  .warn{
+    display:flex;gap:10px;background:#fdeede;border:1px solid #f0c79a;
+    border-left:4px solid var(--rust);border-radius:10px;
+    padding:10px 12px;margin:0 0 10px;font-size:.86rem;color:#6e3a22;
+  }
+  .warn b{color:var(--rust)}
+  .warn .ic{flex-shrink:0;font-size:1rem;line-height:1.4}
+
+  .call{
+    display:inline-flex;align-items:center;gap:7px;margin-top:4px;
+    background:var(--sea);color:#fff;text-decoration:none;font-weight:600;
+    font-size:.85rem;padding:8px 14px;border-radius:10px;transition:.2s;
+  }
+  .call:hover{background:var(--sea-deep);transform:translateY(-1px)}
+  .pill{
+    display:inline-block;background:#e7f0ef;color:var(--sea-deep);
+    font-size:.74rem;font-weight:700;padding:3px 9px;border-radius:999px;margin:2px 4px 2px 0;
+  }
+  .pill.eur{background:#f6e7da;color:var(--rust)}
+
+  /* ---------- INFO BLOCKS ---------- */
+  .section-title{
+    font-family:'Fraunces',serif;font-size:1.45rem;font-weight:600;
+    margin:38px 2px 14px;display:flex;align-items:center;gap:10px;
+  }
+  .section-title::after{content:"";flex:1;height:1px;background:var(--line)}
+  .resv{
+    background:var(--cream);border:1px solid var(--line);border-radius:16px;
+    padding:6px 4px;box-shadow:0 4px 16px var(--shadow);
+  }
+  .resv-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 14px;border-bottom:1px solid var(--line);
+  }
+  .resv-row:last-child{border-bottom:none}
+  .resv-row .n{font-weight:700;font-size:.95rem}
+  .resv-row .n small{display:block;font-weight:500;color:var(--ink-soft);font-size:.78rem}
+  .tipgrid{display:grid;gap:10px}
+  .tip{
+    background:var(--cream);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;font-size:.92rem;
+  }
+  .tip h4{font-size:.95rem;margin-bottom:4px;display:flex;align-items:center;gap:7px}
+  .tip p{color:var(--ink-soft)}
+  .foot{text-align:center;margin-top:40px;color:var(--ink-soft);font-size:.82rem}
+  .foot em{font-family:'Fraunces',serif;font-style:italic}
+  #map{height:360px;width:100%;border-radius:16px;border:1px solid var(--line);box-shadow:0 4px 16px var(--shadow);z-index:1}
+  .maplead{font-size:.9rem;color:var(--ink-soft);margin:0 2px 12px}
+  .routebtns{display:grid;gap:10px;margin-top:14px}
+  .routebtn{display:flex;align-items:center;gap:12px;background:var(--cream);border:1px solid var(--line);border-left:4px solid var(--ochre);border-radius:14px;padding:12px 14px;text-decoration:none;color:var(--ink);box-shadow:0 4px 16px var(--shadow);transition:.2s}
+  .routebtn:hover{transform:translateY(-1px)}
+  .routebtn.d2{border-left-color:var(--sea)}
+  .routebtn.d3{border-left-color:var(--rust)}
+  .routebtn .rt{flex:1}
+  .routebtn .rt b{display:block;font-size:.96rem}
+  .routebtn .rt small{color:var(--ink-soft);font-size:.8rem}
+  .routebtn .go{font-size:1.3rem}
+  .leaflet-popup-content{font-family:'Hanken Grotesk',sans-serif;font-size:.9rem}
+  .leaflet-popup-content a{color:var(--sea);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="sun"></div>
+  <div class="kicker">Escapada · Murcia → Almería</div>
+  <h1>Cabo de <em>Gata</em></h1>
+  <div class="dates">Domingo 7 — Martes 9 de junio · 2026</div>
+  <div class="crew">🍷 2 parejas · ruta + playa + barco</div>
+</header>
+
+<div class="wrap">
+
+  <nav class="tabs">
+    <div class="tab active" data-day="1"><b>Día 1</b><span>Dom · San José</span></div>
+    <div class="tab" data-day="2"><b>Día 2</b><span>Lun · Agua Amarga</span></div>
+    <div class="tab" data-day="3"><b>Día 3</b><span>Mar · Regreso</span></div>
+  </nav>
+
+  <!-- ============ DÍA 1 ============ -->
+  <section class="day active" data-day="1">
+    <div class="day-head"><h2>San José</h2><span class="route">playas de poniente + mar</span></div>
+    <div class="timeline">
+
+      <div class="stop">
+        <div class="dot">🚗</div>
+        <div class="card"><div class="card-top">
+          <div class="time">9:00</div>
+          <div class="card-title"><h3>Salida de Murcia</h3><div class="tag">≈ 2 h 15 · unos 190 km</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>Saliendo a las 9:00–9:30 llegáis al mediodía. Sin prisas.</p>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">🛎️</div>
+        <div class="card"><div class="card-top">
+          <div class="time">12:00</div>
+          <div class="card-title"><h3>Hotel Alove</h3><div class="tag">dejar equipaje · noche 1</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>Si la habitación no está lista aún, os guardan las maletas y aparcáis.</p>
+          <div class="warn"><span class="ic">💶</span><span>El <b>desayuno es aparte (~10 €)</b> y varios huéspedes lo ven caro. Mejor café y bollería en el pueblo.</span></div>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">🦐</div>
+        <div class="card"><div class="card-top">
+          <div class="time">13:30</div>
+          <div class="card-title"><h3>Comida en 4 Nudos</h3><div class="tag">club náutico · vistas al puerto</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>Pescado del día — mirad la pizarra. <span class="pill eur">€€</span><span class="pill">abre domingo</span></p>
+          <a class="call" href="tel:+34620938160">📞 Reservar · 620 93 81 60</a>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">⛵</div>
+        <div class="card"><div class="card-top">
+          <div class="time">17:00</div>
+          <div class="card-title"><h3>Excursión en barco</h3><div class="tag">~2 h · calas + snorkel + baño</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>La pieza central: calas inaccesibles por tierra y <strong>baño desde el barco</strong>. Resuelve mar y chapuzón de un golpe.</p>
+          <div class="warn"><span class="ic">📅</span><span><b>Reservad con antelación:</b> son fechas de puente y las plazas vuelan.</span></div>
+          <a class="call" href="tel:+34623182848">📞 Volcanic Tours · 623 18 28 48</a>
+          <a class="call" href="tel:+34613245487" style="background:var(--ochre);color:var(--ink)">📞 Alt. Paseos en Barco · 613 24 54 87</a>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">🍽️</div>
+        <div class="card"><div class="card-top">
+          <div class="time">21:00</div>
+          <div class="card-title"><h3>Cena · La Buganvilla</h3><div class="tag">gastro · maridaje de copas</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>Cocina fusión finísima — el <strong>atún es de matrícula</strong>. Calidad por encima de cantidad. Aquí pedís el maridaje de un par de copas: la cata, sentados y sin coche. <span class="pill eur">€€</span></p>
+          <a class="call" href="tel:+34622862625">📞 Reservar · 622 86 26 25</a>
+        </div></div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ DÍA 2 ============ -->
+  <section class="day" data-day="2">
+    <div class="day-head"><h2>A Agua Amarga</h2><span class="route">minas · calas · brasa</span></div>
+    <div class="timeline">
+
+      <div class="stop">
+        <div class="dot">🏖️</div>
+        <div class="card"><div class="card-top">
+          <div class="time">9:30</div>
+          <div class="card-title"><h3>Génoveses y Mónsul</h3><div class="tag">en coche · sin restricción aún</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <div class="warn"><span class="ic">🚧</span><span>Aparcad <b>solo en la zona habilitada</b>. La regulación de acceso en coche empieza el 20 de junio, así que el día 8 todavía podéis entrar.</span></div>
+          <p>Las dos playas más icónicas del parque: arenal virgen y la roca-duna de cine de Mónsul.</p>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">⛏️</div>
+        <div class="card"><div class="card-top">
+          <div class="time">11:30</div>
+          <div class="card-title"><h3>Pozo de los Frailes + Rodalquilar</h3><div class="tag">noria · minas de oro</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>Noria de sangre restaurada (10 min) y las <strong>minas de oro</strong>, con paisaje casi apocalíptico y colores minerales.</p>
+          <p><span class="pill">opcional</span> 30 min en <strong>Níjar pueblo</strong> para cerámica y producto local.</p>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">🧺</div>
+        <div class="card"><div class="card-top">
+          <div class="time opt">14:00</div>
+          <div class="card-title"><h3>Comida ligera de camino</h3><div class="tag">pícnic en cala o algo informal</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>Algo suave para <strong>reservar apetito a la cena</strong>. Buen sitio: una cala camino de Agua Amarga.</p>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">🛎️</div>
+        <div class="card"><div class="card-top">
+          <div class="time">16:00</div>
+          <div class="card-title"><h3>Hotel Mikasa</h3><div class="tag">noche 2 · piscinas de agua salada</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>Hotel boutique precioso. Check-in, piscinas y descanso. El desayuno de aquí <strong>sí merece la pena</strong>.</p>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">🌅</div>
+        <div class="card"><div class="card-top">
+          <div class="time">20:15</div>
+          <div class="card-title"><h3>Faro de Mesa Roldán</h3><div class="tag">atardecer · escenario de cine</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>Domo volcánico con faro y torre defensiva. En junio el sol se pone hacia las <strong>21:30</strong>, así que llegáis con tiempo.</p>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">🔥</div>
+        <div class="card"><div class="card-top">
+          <div class="time">21:30</div>
+          <div class="card-title"><h3>Cena · Asador La Chumbera</h3><div class="tag">carne a la brasa de nivel</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <div class="warn"><span class="ic">🕘</span><span><b>Ojo con el horario del lunes:</b> solo abre 13:30–15:00 y 20:00–22:00, y la reserva es obligatoria. Si os lo complican, plan B abajo.</span></div>
+          <p>Brasa al nivel del País Vasco, en guía Michelin pero sin disparar la cuenta. <span class="pill eur">€€</span></p>
+          <a class="call" href="tel:+34911980806">📞 Reservar · 911 98 08 06</a>
+          <p style="margin-top:10px"><strong>Plan B:</strong> La Nonna, en Agua Amarga (cenas completas ~26 €/persona). <a class="call" href="tel:+34950562569" style="background:var(--ochre);color:var(--ink)">📞 950 56 25 69</a></p>
+        </div></div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ DÍA 3 ============ -->
+  <section class="day" data-day="3">
+    <div class="day-head"><h2>Regreso</h2><span class="route">último baño + gamba roja</span></div>
+    <div class="timeline">
+
+      <div class="stop">
+        <div class="dot">🌊</div>
+        <div class="card"><div class="card-top">
+          <div class="time">9:00</div>
+          <div class="card-title"><h3>Playa de los Muertos</h3><div class="tag">cala turquesa · baño matutino</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <div class="warn"><span class="ic">⚠️</span><span><b>Antes de bajar:</b> el sendero es empinado (15–20 min) — calzado con suela, <b>no chanclas</b>. El aparcamiento de arriba se llena pronto, así que llegad temprano.</span></div>
+          <p>Una de las mejores calas del parque: cantos rodados y agua cristalina.</p>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">🧳</div>
+        <div class="card"><div class="card-top">
+          <div class="time">11:30</div>
+          <div class="card-title"><h3>Checkout y rumbo a Murcia</h3><div class="tag">salida a mediodía</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>De vuelta a casa con una última parada de despedida.</p>
+        </div></div></div>
+      </div>
+
+      <div class="stop">
+        <div class="dot">🦐</div>
+        <div class="card"><div class="card-top">
+          <div class="time">13:00</div>
+          <div class="card-title"><h3>Parada en Garrucha</h3><div class="tag">la legendaria gamba roja</div></div>
+          <div class="chev">⌄</div>
+        </div><div class="card-body"><div class="inner">
+          <p>Os pilla de camino. Buscad marisquería en el paseo del puerto y cerráis el viaje por todo lo alto. <span class="pill eur">capricho final</span></p>
+        </div></div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ MAPA ============ -->
+  <h3 class="section-title">🗺️ Mapa y trayectos</h3>
+  <p class="maplead">Toca cualquier punto para abrirlo en Google Maps. Abajo, la ruta en coche de cada día lista para navegar.</p>
+  <div id="map"></div>
+  <div class="routebtns">
+    <a class="routebtn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/Murcia,Espa%C3%B1a/36.7619498,-2.1089013">
+      <span class="go">🚗</span><span class="rt"><b>Día 1 · Murcia → San José</b><small>≈ 2 h 15 · unos 190 km</small></span><span>↗</span>
+    </a>
+    <a class="routebtn d2" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/36.7619498,-2.1089013/36.7445895,-2.1220108/36.7307652,-2.1455119/36.7887143,-2.1095279/36.8532568,-2.0467748/36.9414331,-1.9334944">
+      <span class="go">🚗</span><span class="rt"><b>Día 2 · San José → Agua Amarga</b><small>vía Genoveses, Mónsul y Rodalquilar</small></span><span>↗</span>
+    </a>
+    <a class="routebtn d3" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/36.9414331,-1.9334944/36.9527593,-1.8986288/37.1797,-1.8217/Murcia,Espa%C3%B1a">
+      <span class="go">🚗</span><span class="rt"><b>Día 3 · Agua Amarga → Murcia</b><small>vía Playa de los Muertos y Garrucha</small></span><span>↗</span>
+    </a>
+  </div>
+
+  <!-- ============ RESERVAS ============ -->
+  <h3 class="section-title">📞 Reservas</h3>
+  <div class="resv">
+    <div class="resv-row"><div class="n">4 Nudos<small>Comida domingo</small></div><a class="call" href="tel:+34620938160">Llamar</a></div>
+    <div class="resv-row"><div class="n">Volcanic Tours<small>Barco · domingo tarde</small></div><a class="call" href="tel:+34623182848">Llamar</a></div>
+    <div class="resv-row"><div class="n">La Buganvilla<small>Cena domingo</small></div><a class="call" href="tel:+34622862625">Llamar</a></div>
+    <div class="resv-row"><div class="n">Asador La Chumbera<small>Cena lunes · obligatoria</small></div><a class="call" href="tel:+34911980806">Llamar</a></div>
+  </div>
+
+  <!-- ============ APUNTES ============ -->
+  <h3 class="section-title">💡 Apuntes del experto</h3>
+  <div class="tipgrid">
+    <div class="tip"><h4>🌡️ El mar estará fresco</h4><p>~19–20 °C el primer finde de junio y el cabo es ventoso. Se puede uno bañar, pero meted un cortavientos en la mochila.</p></div>
+    <div class="tip"><h4>⏱️ El lunes va algo cargado</h4><p>Si lo notáis con prisa, lo más prescindible es la parada de Rodalquilar.</p></div>
+    <div class="tip"><h4>🍷 La cata, en la mesa</h4><p>Las bodegas serias quedan a 1 h 45 hacia el oeste y romperían la ruta. El maridaje en la cena gastro os da la cata sin desviaros.</p></div>
+  </div>
+
+  <div class="foot"><em>Buen viaje, sibaritas.</em><br>Ruta de sur a norte por el Parque Natural Cabo de Gata–Níjar</div>
+
+</div>
+
+<script>
+  // Day tabs
+  const tabs=document.querySelectorAll('.tab');
+  const days=document.querySelectorAll('.day');
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    const d=t.dataset.day;
+    tabs.forEach(x=>x.classList.toggle('active',x.dataset.day===d));
+    days.forEach(x=>x.classList.toggle('active',x.dataset.day===d));
+    window.scrollTo({top:document.querySelector('.tabs').offsetTop-4,behavior:'smooth'});
+  }));
+
+  // Expandable cards
+  document.querySelectorAll('.card-top').forEach(c=>{
+    c.addEventListener('click',()=>c.closest('.stop').classList.toggle('open'));
+  });
+
+  // ---- Interactive map (Leaflet) ----
+  (function(){
+    if(typeof L==='undefined'){return;}
+    var colors={1:'#d98a3d',2:'#1c6d68',3:'#b5482e'};
+    var stops=[
+      [1,37.9922,-1.1307,'Murcia (salida)'],
+      [1,36.7619498,-2.1089013,'Hotel Alove · San José'],
+      [1,36.7445895,-2.1220108,'Playa de los Genoveses'],
+      [1,36.7307652,-2.1455119,'Playa de Mónsul'],
+      [2,36.7887143,-2.1095279,'Noria · Pozo de los Frailes'],
+      [2,36.8532568,-2.0467748,'Minas de Rodalquilar'],
+      [2,36.9414331,-1.9334944,'Hotel Mikasa · Agua Amarga'],
+      [2,36.9418529,-1.9066494,'Faro de Mesa Roldán'],
+      [3,36.9527593,-1.8986288,'Playa de los Muertos'],
+      [3,37.1797,-1.8217,'Garrucha']
+    ];
+    var map=L.map('map',{scrollWheelZoom:false});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      attribution:'© OpenStreetMap',maxZoom:18
+    }).addTo(map);
+    var pts=[];
+    stops.forEach(function(s){
+      L.circleMarker([s[1],s[2]],{radius:8,color:'#fff',weight:2,fillColor:colors[s[0]],fillOpacity:1})
+       .addTo(map)
+       .bindPopup('<b>'+s[3]+'</b><br><a href="https://www.google.com/maps/search/?api=1&query='+s[1]+','+s[2]+'" target="_blank" rel="noopener">Abrir en Google Maps ↗</a>');
+      pts.push([s[1],s[2]]);
+    });
+    // route lines (driving order, by day)
+    L.polyline([[37.9922,-1.1307],[36.7619498,-2.1089013]],{color:colors[1],weight:3,opacity:.6,dashArray:'6,8'}).addTo(map);
+    L.polyline([[36.7619498,-2.1089013],[36.7445895,-2.1220108],[36.7307652,-2.1455119],[36.7887143,-2.1095279],[36.8532568,-2.0467748],[36.9414331,-1.9334944]],{color:colors[2],weight:3,opacity:.75}).addTo(map);
+    L.polyline([[36.9414331,-1.9334944],[36.9527593,-1.8986288],[37.1797,-1.8217],[37.9922,-1.1307]],{color:colors[3],weight:3,opacity:.6,dashArray:'6,8'}).addTo(map);
+    map.fitBounds(pts,{padding:[30,30]});
+    // ensure correct sizing once visible
+    setTimeout(function(){map.invalidateSize();},300);
+  })();
+
+</script>
+</body>
+</html>
